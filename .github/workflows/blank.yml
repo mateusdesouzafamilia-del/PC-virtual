@@ -1,0 +1,61 @@
+
+name: PC Virtual Gamer Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  windows-pc:
+    runs-on: windows-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Informacoes do sistema
+        shell: pwsh
+        run: |
+          Write-Host "===== PC VIRTUAL GAMER ====="
+          Get-ComputerInfo |
+            Select-Object WindowsProductName,
+              WindowsVersion, OsArchitecture
+
+      - name: Verificar memoria RAM
+        shell: pwsh
+        run: |
+          $ram = Get-CimInstance Win32_ComputerSystem
+          $gb = [math]::Round(
+            $ram.TotalPhysicalMemory / 1GB, 2
+          )
+          Write-Host "RAM TOTAL: $gb GB"
+
+      - name: Verificar processador
+        shell: pwsh
+        run: |
+          Get-CimInstance Win32_Processor |
+            Format-List Name, NumberOfCores,
+              NumberOfLogicalProcessors
+
+      - name: Verificar GPU
+        shell: pwsh
+        run: |
+          Get-CimInstance Win32_VideoController |
+            Format-List Name, DriverVersion,
+              VideoProcessor
+
+      - name: Verificar virtualizacao
+        shell: pwsh
+        run: |
+          systeminfo | Select-String `
+            "Virtualization|Hyper-V|Hyper-V Requirements"
+
+      - name: Preparar ferramentas
+        shell: pwsh
+        run: |
+          Write-Host "Preparando ambiente Windows..."
+          winget --version
+
+      - name: Relatorio final
+        shell: pwsh
+        run: |
+          Write-Host "===== DIAGNOSTICO CONCLUIDO ====="
+          Write-Host "Ambiente Windows preparado."
+          Write-Host "Consulte os resultados acima."
